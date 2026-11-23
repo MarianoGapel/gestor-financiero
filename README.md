@@ -2,15 +2,15 @@
 
 Aplicación web progresiva (**PWA**) desarrollada con **Vue 3 (Composition API)**, **Pinia**, **Vue Router**, **Tailwind CSS**, **Chart.js** y **Supabase** para la gestión integral de cuentas bancarias/billeteras, registro de movimientos contables y valuación en tiempo real de activos financieros en **USD**, **USDT**, **ARS** y **EUR**.
 
-- **Repositorio GitHub:** `[https://github.com/](https://github.com/)<TU_USUARIO>/<TU_REPOSITORIO>`
-- **Aplicación Publicada (GitHub Pages):** `https://<TU_USUARIO>.github.io/<TU_REPOSITORIO>/`
+- **Repositorio GitHub:** https://github.com/MarianoGapel/gestor-financiero
+- **Aplicación Publicada (GitHub Pages):** https://marianogapel.github.io/gestor-financiero/
 
 ---
 
 ## Stack Tecnológico
 
 - **Frontend:** Vue 3 (`<script setup>`), Vue Router 4 (guards de autenticación y rol), Pinia (gestión de estado reactivo), Tailwind CSS.
-- **Visualización y Exportación:** Chart.js (`vue-chartjs`) para comparativas mensuales y exportación estándar a CSV / Excel.
+- **Visualización y Exportación:** Chart.js (`vue-chartjs`) para comparativas mensuales y exportación a CSV / Excel.
 - **Backend as a Service (BaaS):** Supabase (PostgreSQL, Auth con JWT, Row Level Security y funciones RPC `SECURITY DEFINER`).
 - **PWA y Calidad:** `vite-plugin-pwa` (Service Worker + Web App Manifest) y Vitest (`@vue/test-utils`).
 
@@ -33,8 +33,8 @@ Aplicación web progresiva (**PWA**) desarrollada con **Vue 3 (Composition API)*
 ### 1. Clonar el repositorio e instalar dependencias
 
 ```bash
-git clone https://github.com/<TU_USUARIO>/<TU_REPOSITORIO>.git
-cd <TU_REPOSITORIO>
+git clone [https://github.com/MarianoGapel/gestor-financiero.git](https://github.com/MarianoGapel/gestor-financiero.git)
+cd gestor-financiero
 npm install
 ```
 
@@ -50,7 +50,7 @@ Completalo con las credenciales públicas de tu proyecto en **Supabase → Proje
 
 | Variable | Descripción | Ejemplo |
 | :--- | :--- | :--- |
-| `VITE_SUPABASE_URL` | URL base de la API REST y Auth de tu proyecto Supabase. | `[https://xyzcompany.supabase.co](https://xyzcompany.supabase.co)` |
+| `VITE_SUPABASE_URL` | URL base de la API REST y Auth de tu proyecto Supabase. | `https://xyzcompany.supabase.co` |
 | `VITE_SUPABASE_ANON_KEY` | Clave pública anónima (`anon` / `public`), segura para el cliente gracias a las políticas RLS. | `eyJhbGciOiJIUzI1NiIsInR5cCI6...` |
 
 ### 3. Configurar la base de datos en Supabase (`supabase/schema.sql`)
@@ -101,14 +101,14 @@ El repositorio incluye el flujo automatizado **`.github/workflows/ci-cd.yml`**, 
 
 1. Instala dependencias con `npm ci`.
 2. Ejecuta los tests automatizados (`npx vitest run`).
-3. Compila la aplicación (`npm run build`) configurando `VITE_BASE_PATH=/<NOMBRE_DEL_REPO>/` para que las rutas de assets y el Service Worker funcionen bajo la subcarpeta de GitHub Pages.
+3. Compila la aplicación (`npm run build`) configurando `VITE_BASE_PATH=/gestor-financiero/` para que las rutas de assets y el Service Worker funcionen bajo la subcarpeta de GitHub Pages.
 4. Publica la carpeta `dist/` en **GitHub Pages**.
 
 Como Vite inyecta las variables `VITE_*` en tiempo de compilación (*build-time*) y el archivo `.env` está excluido del repositorio por `.gitignore`, es obligatorio registrar estos **dos Secrets** en **GitHub → Settings → Secrets and variables → Actions → New repository secret**:
 
 | Secret en GitHub Actions | Valor requerido | Función en el pipeline |
 | :--- | :--- | :--- |
-| `VITE_SUPABASE_URL` | URL del proyecto Supabase (`[https://...supabase.co](https://...supabase.co)`) | Permite que el bundle compilado en GitHub Actions se conecte a la instancia de producción de Supabase. |
+| `VITE_SUPABASE_URL` | URL del proyecto Supabase (`https://...supabase.co`) | Permite que el bundle compilado en GitHub Actions se conecte a la instancia de producción de Supabase. |
 | `VITE_SUPABASE_ANON_KEY` | Clave pública `anon` de Supabase | Habilita la autenticación y consultas protegidas por RLS desde el frontend publicado sin exponer credenciales en el código fuente. |
 
 ---
@@ -117,9 +117,10 @@ Como Vite inyecta las variables `VITE_*` en tiempo de compilación (*build-time*
 
 1. **Activar GitHub Pages:** En tu repositorio de GitHub, entrá a **Settings → Pages** y en **Build and deployment → Source** seleccioná **GitHub Actions**.
 2. **Habilitar redirecciones en Supabase:** Entrá a **Supabase → Authentication → URL Configuration** y configurá:
-   - **Site URL:** `https://<TU_USUARIO>.github.io/<TU_REPOSITORIO>/`
+   - **Site URL:** `https://marianogapel.github.io/gestor-financiero/`
    - **Redirect URLs:**
-     - `https://github.com/MarianoGapel/gestor-financiero**`
+     - `https://marianogapel.github.io/gestor-financiero/**`
+     - `http://localhost:5173/**`
 
 ---
 
