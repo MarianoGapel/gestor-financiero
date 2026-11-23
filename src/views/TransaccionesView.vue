@@ -20,7 +20,7 @@ const guardando = ref(false)
 const exitoMsg = ref(false)
 const busqueda = ref('')
 const filtroTipo = ref('ALL')
-const filtroCuenta = ref(typeof route.query.cuenta === 'string' ? route.query.cuenta : '')
+const filtroCuenta = ref(resolverIdCuenta(route.query.cuenta))
 const sugerenciaAplicada = ref('')
 const sugerenciaPendiente = ref(null)
 
@@ -38,17 +38,25 @@ const form = ref({
 const monedaActiva = computed(() => financeStore.monedaSeleccionada || 'USD')
 const simbolo = computed(() => financeStore.simboloMoneda(monedaActiva.value))
 
+function resolverIdCuenta(rawId) {
+  if (rawId === undefined || rawId === null || rawId === '') return ''
+  const strId = String(rawId)
+  const encontrada = financeStore.cuentas.find((c) => String(c.id) === strId)
+  return encontrada ? encontrada.id : strId
+}
+
 const cuentaFiltradaObj = computed(() =>
-  financeStore.cuentas.find((c) => c.id === filtroCuenta.value) || null
+  financeStore.cuentas.find((c) => String(c.id) === String(filtroCuenta.value)) || null
 )
 
 watch(
-  () => route.query.cuenta,
-  (nuevaCuenta) => {
-    const idCuenta = typeof nuevaCuenta === 'string' ? nuevaCuenta : ''
+  [() => route.query.cuenta, () => financeStore.cuentas],
+  ([nuevaCuenta]) => {
+    const raw = Array.isArray(nuevaCuenta) ? nuevaCuenta[0] : nuevaCuenta
+    const idCuenta = resolverIdCuenta(raw)
     filtroCuenta.value = idCuenta
     if (
-      idCuenta &&
+      idCuenta !== '' &&
       !editandoId.value &&
       !formularioTocado.value &&
       !cuentaSeleccionadaManualmente.value
@@ -61,8 +69,8 @@ watch(
 
 function onCambiarFiltroCuenta() {
   const nuevaQuery = { ...route.query }
-  if (filtroCuenta.value) {
-    nuevaQuery.cuenta = filtroCuenta.value
+  if (filtroCuenta.value !== '' && filtroCuenta.value != null) {
+    nuevaQuery.cuenta = String(filtroCuenta.value)
   } else {
     delete nuevaQuery.cuenta
   }
@@ -78,8 +86,8 @@ watch(
   () => financeStore.monedaSeleccionada,
   (nuevaMoneda) => {
     seleccionadosIds.value = []
-    if (!filtroCuenta.value) return
-    const cta = financeStore.cuentas.find((c) => c.id === filtroCuenta.value)
+    if (filtroCuenta.value === '' || filtroCuenta.value == null) return
+    const cta = financeStore.cuentas.find((c) => String(c.id) === String(filtroCuenta.value))
     if (cta && (cta.moneda || 'USD').toUpperCase() !== nuevaMoneda) {
       limpiarFiltroCuenta()
     }
@@ -87,7 +95,7 @@ watch(
 )
 
 const cuentaSeleccionadaObj = computed(() =>
-  financeStore.cuentas.find((c) => c.id === form.value.cuenta_id) || null
+  financeStore.cuentas.find((c) => String(c.id) === String(form.value.cuenta_id)) || null
 )
 
 const monedaCuentaFormulario = computed(() =>
@@ -105,10 +113,10 @@ const efectivoBaseParaOperacion = computed(() => {
   if (!cuentaSeleccionadaObj.value) return 0
   let base = efectivoDisponibleSeleccionado.value
 
-  if (
+if (
     editandoId.value &&
     txOriginalEditando.value &&
-    txOriginalEditando.value.cuenta_id === form.value.cuenta_id
+    String(txOriginalEditando.value.cuenta_id) === String(form.value.cuenta_id)
   ) {
     const orig = txOriginalEditando.value
     if (orig.tipo === 'gasto' || orig.tipo === 'inversion') {
@@ -205,13 +213,15 @@ watch(
 
 watch(
   [() => financeStore.monedaSeleccionada, () => financeStore.cuentasMonedaActiva],
-  ([_nuevaMoneda, listaCuentas]) => {
+  ([, listaCuentas]) => {
     if (editandoId.value || formularioTocado.value || cuentaSeleccionadaManualmente.value) return
     if (filtroCuenta.value) {
       form.value.cuenta_id = filtroCuenta.value
       return
     }
-    const cuentaActual = financeStore.cuentas.find((c) => c.id === form.value.cuenta_id)
+    const cuentaActual = financeStore.cuentas.find(
+      (c) => String(c.id) === String(form.value.cuenta_id)
+    )
     const coincideDivisa =
       cuentaActual &&
       (cuentaActual.moneda || 'USD').toUpperCase() === financeStore.monedaSeleccionada
@@ -225,7 +235,10 @@ watch(
 
 const transaccionesFiltradas = computed(() => {
   return financeStore.transaccionesMonedaActiva.filter((tx) => {
-    const coincideCuenta = !filtroCuenta.value || tx.cuenta_id === filtroCuenta.value
+    const coincideCuenta =
+      filtroCuenta.value === '' ||
+      filtroCuenta.value == null ||
+      String(tx.cuenta_id) === String(filtroCuenta.value)
     const coincideTipo = filtroTipo.value === 'ALL' || tx.tipo === filtroTipo.value
     const q = busqueda.value.toLowerCase().trim()
     const coincideTexto =
@@ -354,7 +367,9 @@ async function guardarMovimiento() {
 
   guardando.value = true
   try {
-    const cuentaElegida = financeStore.cuentas.find((c) => c.id === form.value.cuenta_id)
+    const cuentaElegida = financeStore.cuentas.find(
+      (c) => String(c.id) === String(form.value.cuenta_id)
+    )
     const simboloActivo = esCompraActivoCripto.value
       ? (form.value.activo_simbolo || 'BTC').toUpperCase().trim()
       : null
@@ -367,7 +382,7 @@ async function guardarMovimiento() {
       (esCompraActivoCripto.value ? `Compra ${cantidadActivo} ${simboloActivo}` : '')
 
     const payload = {
-      cuenta_id: form.value.cuenta_id,
+      cuenta_id: cuentaElegida ? cuentaElegida.id : form.value.cuenta_id,
       categoria_id: form.value.categoria_id || null,
       tipo: form.value.tipo,
       monto: Number(form.value.monto),
