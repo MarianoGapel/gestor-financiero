@@ -1,6 +1,5 @@
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
-import { ref, computed, onMounted } from 'vue'
 import { useFinanceStore } from '@/stores/useFinanceStore'
 
 const financeStore = useFinanceStore()
@@ -301,9 +300,6 @@ async function borrarCategoria(id) {
               </div>
             </div>
           </div>
-          <p class="text-[11px] text-on-surface-variant mt-4">
-            Agregados anonimizados obtenidos mediante función SECURITY DEFINER.
-          </p>
         </div>
       </div>
 
@@ -365,7 +361,7 @@ async function borrarCategoria(id) {
 
       <!-- Main 2-Column Split -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        <div class="lg:col-span-4">
+        <div class="lg:col-span-4 lg:sticky lg:top-24 self-start">
           <div class="p-6 sm:p-7 rounded-2xl bg-surface-container-lowest shadow-sm">
             <div class="flex items-center justify-between pb-5">
               <div>
@@ -387,6 +383,7 @@ async function borrarCategoria(id) {
                   Nombre de la Categoría
                 </label>
                 <input
+                  ref="inputNombreRef"
                   v-model="form.nombre"
                   required
                   type="text"
