@@ -332,7 +332,7 @@ function exportarBalanceCSV() {
         </div>
 
         <!-- Formulario Registrar / Editar Cuenta -->
-        <div class="lg:col-span-4 lg:sticky lg:top-24 rounded-2xl bg-surface-container-lowest p-6 sm:p-7 ...">
+        <div class="lg:col-span-4 lg:sticky lg:top-24 rounded-2xl bg-surface-container-lowest p-6 sm:p-7 shadow-sm">
           <div class="space-y-1 mb-6">
             <span class="text-[10px] font-semibold tracking-widest uppercase text-primary">
               {{ editandoId ? 'Modificación' : 'Registro Veloz' }}

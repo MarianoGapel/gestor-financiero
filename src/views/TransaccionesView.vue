@@ -328,7 +328,6 @@ function seleccionarEditar(tx) {
     activo_simbolo: activoDetectado?.simbolo || 'BTC',
     activo_cantidad: activoDetectado?.cantidad || ''
   }
-  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 function duplicarParaHoy(tx) {
@@ -352,7 +351,6 @@ function duplicarParaHoy(tx) {
     activo_simbolo: activoDetectado?.simbolo || 'BTC',
     activo_cantidad: activoDetectado?.cantidad || ''
   }
-  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 async function guardarMovimiento() {

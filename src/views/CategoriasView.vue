@@ -105,7 +105,6 @@ function seleccionarEditar(cat) {
     tipo: cat.tipo || 'gasto',
     requiere_activo: Boolean(cat.requiere_activo)
   }
-  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 async function guardarCategoria() {
