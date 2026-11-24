@@ -3,7 +3,6 @@ import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useFinanceStore } from '@/stores/useFinanceStore'
 import { hoyLocal, formatearFecha, escaparCeldaCSV } from '@/composables/useFormatters'
-import { sugerirClasificacion } from '@/composables/useSmartCategorizer'
 
 const route = useRoute()
 const router = useRouter()
@@ -15,14 +14,11 @@ const txOriginalEditando = ref(null)
 const cuentaSeleccionadaManualmente = ref(false)
 const formularioTocado = ref(false)
 const seleccionadosIds = ref([])
-const seleccionManual = ref(false)
 const guardando = ref(false)
 const exitoMsg = ref(false)
 const busqueda = ref('')
 const filtroTipo = ref('ALL')
 const filtroCuenta = ref(resolverIdCuenta(route.query.cuenta))
-const sugerenciaAplicada = ref('')
-const sugerenciaPendiente = ref(null)
 
 const form = ref({
   cuenta_id: '',
@@ -113,7 +109,7 @@ const efectivoBaseParaOperacion = computed(() => {
   if (!cuentaSeleccionadaObj.value) return 0
   let base = efectivoDisponibleSeleccionado.value
 
-if (
+  if (
     editandoId.value &&
     txOriginalEditando.value &&
     String(txOriginalEditando.value.cuenta_id) === String(form.value.cuenta_id)
@@ -159,42 +155,6 @@ const precioUnitarioCompra = computed(() => {
   if (monto > 0 && cant > 0) return monto / cant
   return 0
 })
-
-function marcarSeleccionManual() {
-  seleccionManual.value = true
-  formularioTocado.value = true
-  sugerenciaAplicada.value = ''
-}
-
-function aplicarSugerenciaPendiente() {
-  if (!sugerenciaPendiente.value) return
-  form.value.tipo = sugerenciaPendiente.value.tipo
-  form.value.categoria_id = sugerenciaPendiente.value.categoriaId
-  sugerenciaAplicada.value = `${sugerenciaPendiente.value.tipo.toUpperCase()} → ${sugerenciaPendiente.value.categoriaNombre}`
-  sugerenciaPendiente.value = null
-  seleccionManual.value = false
-}
-
-watch(
-  () => form.value.descripcion,
-  (nuevaDesc) => {
-    if (editandoId.value) return
-    const sug = sugerirClasificacion(nuevaDesc, financeStore.categorias)
-    if (sug && sug.categoriaId) {
-      if (seleccionManual.value) {
-        sugerenciaPendiente.value = sug
-      } else {
-        form.value.tipo = sug.tipo
-        form.value.categoria_id = sug.categoriaId
-        sugerenciaAplicada.value = `${sug.tipo.toUpperCase()} → ${sug.categoriaNombre}`
-        sugerenciaPendiente.value = null
-      }
-    } else {
-      sugerenciaAplicada.value = ''
-      sugerenciaPendiente.value = null
-    }
-  }
-)
 
 watch(
   categoriasPorTipo,
@@ -289,9 +249,6 @@ function resetForm() {
   txOriginalEditando.value = null
   cuentaSeleccionadaManualmente.value = false
   formularioTocado.value = false
-  seleccionManual.value = false
-  sugerenciaAplicada.value = ''
-  sugerenciaPendiente.value = null
   const cuentaPorDefecto =
     filtroCuenta.value || financeStore.cuentasMonedaActiva[0]?.id || financeStore.cuentas[0]?.id || ''
   const primeraCat = categoriasPorTipo.value[0]?.id || ''
@@ -315,9 +272,6 @@ function seleccionarEditar(tx) {
   editandoTieneActivo.value = Boolean(activoDetectado)
   cuentaSeleccionadaManualmente.value = true
   formularioTocado.value = true
-  seleccionManual.value = true
-  sugerenciaAplicada.value = ''
-  sugerenciaPendiente.value = null
   form.value = {
     cuenta_id: tx.cuenta_id,
     categoria_id: tx.categoria_id || '',
@@ -338,9 +292,6 @@ function duplicarParaHoy(tx) {
   editandoTieneActivo.value = Boolean(activoDetectado)
   cuentaSeleccionadaManualmente.value = true
   formularioTocado.value = true
-  seleccionManual.value = true
-  sugerenciaAplicada.value = 'Movimiento duplicado con fecha de hoy'
-  sugerenciaPendiente.value = null
   form.value = {
     cuenta_id: tx.cuenta_id,
     categoria_id: tx.categoria_id || '',
@@ -656,19 +607,19 @@ function imprimirLibro() {
               </label>
               <div class="grid grid-cols-3 gap-1.5 p-1 rounded-lg bg-surface-container-low">
                 <label class="cursor-pointer">
-                  <input v-model="form.tipo" @change="marcarSeleccionManual" class="peer sr-only" name="tipoOp" type="radio" value="inversion" />
+                  <input v-model="form.tipo" @change="formularioTocado = true" class="peer sr-only" name="tipoOp" type="radio" value="inversion" />
                   <div class="py-2 text-center rounded-md font-medium text-[11px] text-on-surface-variant peer-checked:bg-surface-container-lowest peer-checked:text-primary peer-checked:shadow-sm transition-all">
                     Inversión
                   </div>
                 </label>
                 <label class="cursor-pointer">
-                  <input v-model="form.tipo" @change="marcarSeleccionManual" class="peer sr-only" name="tipoOp" type="radio" value="ingreso" />
+                  <input v-model="form.tipo" @change="formularioTocado = true" class="peer sr-only" name="tipoOp" type="radio" value="ingreso" />
                   <div class="py-2 text-center rounded-md font-medium text-[11px] text-on-surface-variant peer-checked:bg-surface-container-lowest peer-checked:text-on-surface peer-checked:shadow-sm transition-all">
                     Ingreso
                   </div>
                 </label>
                 <label class="cursor-pointer">
-                  <input v-model="form.tipo" @change="marcarSeleccionManual" class="peer sr-only" name="tipoOp" type="radio" value="gasto" />
+                  <input v-model="form.tipo" @change="formularioTocado = true" class="peer sr-only" name="tipoOp" type="radio" value="gasto" />
                   <div class="py-2 text-center rounded-md font-medium text-[11px] text-on-surface-variant peer-checked:bg-surface-container-lowest peer-checked:text-tertiary peer-checked:shadow-sm transition-all">
                     Gasto
                   </div>
@@ -685,7 +636,7 @@ function imprimirLibro() {
                 <select
                   id="catInput"
                   v-model="form.categoria_id"
-                  @change="marcarSeleccionManual"
+                  @change="formularioTocado = true"
                   class="w-full h-11 px-3.5 pr-9 bg-surface-container-low rounded-lg text-on-surface text-xs font-medium focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all appearance-none cursor-pointer"
                 >
                   <option v-for="cat in categoriasPorTipo" :key="cat.id" :value="cat.id">
@@ -812,21 +763,6 @@ function imprimirLibro() {
                 :placeholder="esCompraActivoCripto ? 'Ej: Compra Bitcoin spot (opcional)' : 'Ej: Pago servicios, Alquiler, Sueldo...'"
                 class="w-full h-11 px-3.5 bg-surface-container-low rounded-lg text-on-surface text-xs focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all placeholder:text-outline"
               />
-              <span v-if="sugerenciaAplicada" class="text-[11px] text-primary font-medium flex items-center gap-1">
-                <span class="material-symbols-outlined text-[14px]">auto_awesome</span>
-                <span>Clasificación sugerida: {{ sugerenciaAplicada }}</span>
-              </span>
-              <button
-                v-else-if="sugerenciaPendiente"
-                type="button"
-                @click="aplicarSugerenciaPendiente"
-                class="text-left text-[11px] text-primary hover:underline font-medium flex items-center gap-1 cursor-pointer"
-              >
-                <span class="material-symbols-outlined text-[14px]">auto_awesome</span>
-                <span>
-                  Aplicar sugerencia: {{ sugerenciaPendiente.tipo.toUpperCase() }} → {{ sugerenciaPendiente.categoriaNombre }}
-                </span>
-              </button>
             </div>
 
             <!-- Submit Buttons -->
