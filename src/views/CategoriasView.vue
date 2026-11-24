@@ -1,4 +1,5 @@
 <script setup>
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { ref, computed, onMounted } from 'vue'
 import { useFinanceStore } from '@/stores/useFinanceStore'
 
@@ -8,6 +9,7 @@ const editandoId = ref(null)
 const guardando = ref(false)
 const exitoMsg = ref(false)
 const filtroTab = ref('all')
+const inputNombreRef = ref(null)
 const busqueda = ref('')
 
 const monedaActiva = computed(() => financeStore.monedaSeleccionada || 'USD')
@@ -105,6 +107,10 @@ function seleccionarEditar(cat) {
     tipo: cat.tipo || 'gasto',
     requiere_activo: Boolean(cat.requiere_activo)
   }
+  nextTick(() => {
+    inputNombreRef.value?.focus({ preventScroll: true })
+    inputNombreRef.value?.select()
+  })
 }
 
 async function guardarCategoria() {
