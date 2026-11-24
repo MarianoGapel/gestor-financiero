@@ -63,14 +63,22 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function register(email, password) {
+ async function register(email, password) {
     loading.value = true
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
         password
       })
-      if (error) throw error
+      if (error) {
+        if (error.message?.includes('User already registered')) {
+          throw new Error('Este correo electrónico ya está registrado. Iniciá sesión con tu cuenta.')
+        }
+        if (error.message?.includes('Password should be at least')) {
+          throw new Error('La contraseña debe tener al menos 6 caracteres.')
+        }
+        throw error
+      }
       if (!data.user) {
         throw new Error('No se pudo crear la cuenta en el servidor de autenticación.')
       }
