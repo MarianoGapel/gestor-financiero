@@ -46,14 +46,21 @@ const porcentajesCatalogo = computed(() => {
   if (total === 0) {
     return {
       gastosPct: 0,
+      inversionesPct: 0,
+      ingresosPct: 0,
       inversionesWidth: '0%',
       gastosWidth: '0%',
       ingresosWidth: '0%'
     }
   }
   const { gastos, inversiones, ingresos } = conteoPorTipo.value
+  const gastosPct = Math.round((gastos / total) * 100)
+  const inversionesPct = Math.round((inversiones / total) * 100)
+  const ingresosPct = Math.max(0, 100 - gastosPct - inversionesPct)
   return {
-    gastosPct: Math.round((gastos / total) * 100),
+    gastosPct,
+    inversionesPct,
+    ingresosPct,
     inversionesWidth: ((inversiones / total) * 100).toFixed(2) + '%',
     gastosWidth: ((gastos / total) * 100).toFixed(2) + '%',
     ingresosWidth: ((ingresos / total) * 100).toFixed(2) + '%'
@@ -227,6 +234,20 @@ async function borrarCategoria(id) {
               class="bg-secondary h-full transition-all"
               :style="{ width: porcentajesCatalogo.ingresosWidth }"
             ></div>
+          </div>
+          <div class="mt-2.5 flex items-center justify-between text-[11px] text-on-surface-variant">
+            <span class="flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-primary"></span>
+              {{ porcentajesCatalogo.inversionesPct }}% Inv.
+            </span>
+            <span class="flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-tertiary"></span>
+              {{ porcentajesCatalogo.gastosPct }}% Gastos
+            </span>
+            <span class="flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-secondary"></span>
+              {{ porcentajesCatalogo.ingresosPct }}% Ingr.
+            </span>
           </div>
         </div>
 
